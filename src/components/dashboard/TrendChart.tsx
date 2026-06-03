@@ -11,7 +11,7 @@ import type { MotorReading } from "@/services/thingspeak";
 
 interface TrendChartProps {
   data: MotorReading[];
-  dataKey: "vibration" | "noise";
+  dataKey: "vibration" | "noise" | "healthIndex";
   color: string;
   yLabel: string;
   domain?: [number | "auto", number | "auto"];

@@ -129,19 +129,14 @@ function RootComponent() {
           onClose={() => setMobileOpen(false)}
         />
         <div
-          className="flex min-h-screen flex-col transition-[padding] duration-300"
-          style={{ paddingLeft: 0 }}
+          className={`flex min-h-screen flex-col transition-[margin] duration-300 ${
+            collapsed ? "md:ml-16" : "md:ml-64"
+          }`}
         >
-          <div
-            className={`flex min-h-screen flex-col transition-[margin] duration-300 md:${
-              collapsed ? "ml-16" : "ml-64"
-            }`}
-          >
-            <AppHeader online onOpenSidebar={() => setMobileOpen(true)} />
-            <main className="flex-1 p-4 md:p-6">
-              <Outlet />
-            </main>
-          </div>
+          <AppHeader online onOpenSidebar={() => setMobileOpen(true)} />
+          <main className="flex-1 p-4 md:p-6">
+            <Outlet />
+          </main>
         </div>
       </div>
     </QueryClientProvider>

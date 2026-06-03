@@ -7,10 +7,12 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { AppHeader } from "@/components/layout/AppHeader";
 
 function NotFoundComponent() {
   return (
@@ -26,7 +28,7 @@ function NotFoundComponent() {
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Go to dashboard
           </Link>
         </div>
       </div>
@@ -48,7 +50,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Something went wrong. You can try refreshing or head back to the dashboard.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -64,7 +66,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Dashboard
           </a>
         </div>
       </div>
@@ -77,21 +79,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
-    links: [
+      { title: "Motor Health Monitor — RVCE" },
       {
-        rel: "stylesheet",
-        href: appCss,
+        name: "description",
+        content:
+          "IoT enabled predictive maintenance dashboard for rotating machinery — RV College of Engineering, Bengaluru.",
       },
+      { property: "og:title", content: "Motor Health Monitor — RVCE" },
+      {
+        property: "og:description",
+        content: "Real-time vibration, noise and health-index monitoring for industrial motors.",
+      },
+      { property: "og:type", content: "website" },
     ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -115,11 +116,34 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="min-h-screen bg-background text-foreground">
+        <AppSidebar
+          open={mobileOpen}
+          collapsed={collapsed}
+          onToggleCollapsed={() => setCollapsed((c) => !c)}
+          onClose={() => setMobileOpen(false)}
+        />
+        <div
+          className="flex min-h-screen flex-col transition-[padding] duration-300"
+          style={{ paddingLeft: 0 }}
+        >
+          <div
+            className={`flex min-h-screen flex-col transition-[margin] duration-300 md:${
+              collapsed ? "ml-16" : "ml-64"
+            }`}
+          >
+            <AppHeader online onOpenSidebar={() => setMobileOpen(true)} />
+            <main className="flex-1 p-4 md:p-6">
+              <Outlet />
+            </main>
+          </div>
+        </div>
+      </div>
     </QueryClientProvider>
   );
 }

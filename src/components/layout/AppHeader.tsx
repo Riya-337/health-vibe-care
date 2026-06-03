@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import rvLogo from "@/assets/rv-logo.png";
+import rvLogoAsset from "@/assets/rv-logo.png.asset.json";
 import motorImg from "@/assets/motor.png";
+const rvLogo = rvLogoAsset.url;
 import { SidebarOpenButton } from "./AppSidebar";
 
 interface AppHeaderProps {

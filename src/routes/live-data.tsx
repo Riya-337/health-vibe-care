@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageShell } from "@/components/layout/PageShell";
-import type { MotorReading, MotorStatus } from "@/services/thingspeak";
+import { fetchMotorReadings } from "@/services/thingspeak";
+import type { MotorReading } from "@/services/thingspeak";
 
 export const Route = createFileRoute("/live-data")({
   head: () => ({ meta: [{ title: "Live Data | Motor Health Monitor" }] }),
@@ -16,29 +17,21 @@ function LiveDataPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const load = async () => {
       try {
-        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent("https://api.thingspeak.com/channels/3399470/feeds.json?api_key=VQL5EX22KNVGXLA4&results=20")}`);
-        const raw = await res.json();
-        const json = JSON.parse(raw.contents);
-        setReadings(json.feeds.map((f: any) => ({
-          timestamp: f.created_at,
-          time: new Date(f.created_at).toLocaleTimeString(),
-          vibration: parseFloat(f.field1) || 0,
-          noise: parseFloat(f.field2) || 0,
-          healthIndex: parseFloat(f.field3) || 0,
-          status: (f.field4?.trim().toUpperCase() || "WARNING") as MotorStatus,
-        })));
+        const data = await fetchMotorReadings(controller.signal);
+        setReadings(data);
         setError(null);
       } catch (e) {
-        setError("Connection issue");
+        setError((e as Error).message);
       } finally {
         setLoading(false);
       }
     };
     load();
     const id = setInterval(load, 20000);
-    return () => clearInterval(id);
+    return () => { controller.abort(); clearInterval(id); };
   }, []);
 
   return (
@@ -51,7 +44,7 @@ function LiveDataPage() {
         </CardHeader>
         <CardContent>
           {loading && readings.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Loading…</p>}
-          {error && <p className="py-3 text-sm text-warning">Connection issue: {error}</p>}
+          {error && <p className="py-3 text-sm text-yellow-500">Connection issue: {error}</p>}
           <div className="overflow-auto">
             <table className="w-full text-sm">
               <thead className="text-xs uppercase tracking-wider text-muted-foreground">

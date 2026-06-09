@@ -24,15 +24,25 @@ export interface ThingSpeakFeed {
 }
 
 export interface ThingSpeakResponse {
-  channel: {
-    id: number;
-    name: string;
-    last_entry_id: number;
-  };
+  channel: { id: number; name: string; last_entry_id: number };
   feeds: ThingSpeakFeed[];
 }
 
-const ENDPOINT = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${READ_API_KEY}&results=20`;
+const DIRECT = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${READ_API_KEY}&results=20`;
+
+const PROXIES = [
+  // Direct (works in deployed/SSR context)
+  { url: DIRECT, unwrap: (d: any) => d },
+  // corsproxy.io
+  { url: `https://corsproxy.io/?${encodeURIComponent(DIRECT)}`, unwrap: (d: any) => d },
+  // allorigins
+  {
+    url: `https://api.allorigins.win/get?url=${encodeURIComponent(DIRECT)}`,
+    unwrap: (d: any) => (typeof d.contents === "string" ? JSON.parse(d.contents) : d),
+  },
+  // thingproxy
+  { url: `https://thingproxy.freeboard.io/fetch/${DIRECT}`, unwrap: (d: any) => d },
+];
 
 function parseStatus(raw: string | null, healthIndex: number): MotorStatus {
   if (raw) {
@@ -62,16 +72,8 @@ function formatTime(iso: string): string {
   }
 }
 
-export async function fetchMotorReadings(signal?: AbortSignal): Promise<MotorReading[]> {
-  const res = await fetch(ENDPOINT, { signal, cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`ThingSpeak request failed: ${res.status}`);
-  }
-  const raw = await res.json();
-  const data = (await res.json()) as ThingSpeakResponse;
-  if (!data?.feeds || !Array.isArray(data.feeds)) return [];
-
-  return data.feeds.map((f) => {
+function mapFeeds(feeds: ThingSpeakFeed[]): MotorReading[] {
+  return feeds.map((f) => {
     const vibration = safeNumber(f.field1);
     const noise = safeNumber(f.field2);
     const healthIndex = safeNumber(f.field3);
@@ -85,4 +87,21 @@ export async function fetchMotorReadings(signal?: AbortSignal): Promise<MotorRea
       status,
     };
   });
+}
+
+// Tries each proxy in order, returns first successful result
+export async function fetchMotorReadings(signal?: AbortSignal): Promise<MotorReading[]> {
+  for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy.url, { signal, cache: "no-store" });
+      if (!res.ok) continue;
+      const raw = await res.json();
+      const data = proxy.unwrap(raw) as ThingSpeakResponse;
+      if (!data?.feeds || !Array.isArray(data.feeds) || data.feeds.length === 0) continue;
+      return mapFeeds(data.feeds);
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("All proxies failed — check network connection");
 }

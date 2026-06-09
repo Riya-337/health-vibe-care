@@ -1,3 +1,4 @@
+import { fetchMotorReadings } from "@/services/thingspeak";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AlertTriangle, Gauge as GaugeIcon, ShieldCheck, Volume2 } from "lucide-react";
@@ -58,36 +59,23 @@ function DashboardPage() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `https://api.allorigins.win/get?url=${encodeURIComponent(
-            "https://api.thingspeak.com/channels/3399470/feeds.json?api_key=VQL5EX22KNVGXLA4&results=20"
-          )}`
-        );
-        const raw = await res.json();
-        const json = JSON.parse(raw.contents);
-        const mapped: MotorReading[] = json.feeds.map((f: any) => ({
-          timestamp: f.created_at,
-          time: new Date(f.created_at).toLocaleTimeString(),
-          vibration: parseFloat(f.field1) || 0,
-          noise: parseFloat(f.field2) || 0,
-          healthIndex: parseFloat(f.field3) || 0,
-          status: (f.field4?.trim().toUpperCase() || "WARNING") as MotorStatus,
-        }));
-        setReadings(mapped);
-        setLastUpdatedAt(new Date());
-        setError(null);
-      } catch (e) {
-        setError("Failed to fetch");
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    const id = setInterval(load, 20000);
-    return () => clearInterval(id);
-  }, []);
+  const controller = new AbortController();
+  const load = async () => {
+    try {
+      const data = await fetchMotorReadings(controller.signal);
+      setReadings(data);
+      // setLastUpdatedAt(new Date()); // only in index.tsx
+      setError(null);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  load();
+  const id = setInterval(load, 20000);
+  return () => { controller.abort(); clearInterval(id); };
+}, []);
 
   const data = readings;
   const current = readings.length > 0 ? readings[readings.length - 1] : FALLBACK;

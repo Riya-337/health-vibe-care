@@ -1,18 +1,46 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageShell } from "@/components/layout/PageShell";
-import { useMotorData } from "@/hooks/useMotorData";
+import type { MotorReading, MotorStatus } from "@/services/thingspeak";
 
 export const Route = createFileRoute("/live-data")({
-  head: () => ({
-    meta: [{ title: "Live Data | Motor Health Monitor" }],
-  }),
+  head: () => ({ meta: [{ title: "Live Data | Motor Health Monitor" }] }),
   component: LiveDataPage,
 });
 
 function LiveDataPage() {
-  const { readings, loading, error } = useMotorData(20_000);
+  const [readings, setReadings] = useState<MotorReading[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent("https://api.thingspeak.com/channels/3399470/feeds.json?api_key=VQL5EX22KNVGXLA4&results=20")}`);
+        const raw = await res.json();
+        const json = JSON.parse(raw.contents);
+        setReadings(json.feeds.map((f: any) => ({
+          timestamp: f.created_at,
+          time: new Date(f.created_at).toLocaleTimeString(),
+          vibration: parseFloat(f.field1) || 0,
+          noise: parseFloat(f.field2) || 0,
+          healthIndex: parseFloat(f.field3) || 0,
+          status: (f.field4?.trim().toUpperCase() || "WARNING") as MotorStatus,
+        })));
+        setError(null);
+      } catch (e) {
+        setError("Connection issue");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+    const id = setInterval(load, 20000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <PageShell title="Live Data" description="Raw telemetry stream from the ESP32 sensor module." icon={Activity}>
       <Card>
@@ -22,12 +50,8 @@ function LiveDataPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && readings.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">Loading…</p>
-          )}
-          {error && (
-            <p className="py-3 text-sm text-warning">Connection issue: {error}</p>
-          )}
+          {loading && readings.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Loading…</p>}
+          {error && <p className="py-3 text-sm text-warning">Connection issue: {error}</p>}
           <div className="overflow-auto">
             <table className="w-full text-sm">
               <thead className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -42,9 +66,7 @@ function LiveDataPage() {
               <tbody>
                 {[...readings].reverse().map((r, i) => (
                   <tr key={i} className="border-t border-border/60">
-                    <td className="py-1.5 text-foreground">
-                      {new Date(r.timestamp).toLocaleString()}
-                    </td>
+                    <td className="py-1.5 text-foreground">{new Date(r.timestamp).toLocaleString()}</td>
                     <td className="py-1.5 text-right tabular-nums">{r.vibration.toFixed(2)}</td>
                     <td className="py-1.5 text-right tabular-nums">{r.noise.toFixed(0)}</td>
                     <td className="py-1.5 text-right tabular-nums">{r.healthIndex.toFixed(0)}</td>

@@ -67,6 +67,7 @@ export async function fetchMotorReadings(signal?: AbortSignal): Promise<MotorRea
   if (!res.ok) {
     throw new Error(`ThingSpeak request failed: ${res.status}`);
   }
+  const raw = await res.json();
   const data = (await res.json()) as ThingSpeakResponse;
   if (!data?.feeds || !Array.isArray(data.feeds)) return [];
 

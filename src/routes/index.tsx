@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { AlertTriangle, Gauge as GaugeIcon, ShieldCheck, Volume2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCard, type KpiTone } from "@/components/dashboard/KpiCard";
@@ -7,7 +8,6 @@ import { TrendChart } from "@/components/dashboard/TrendChart";
 import { AlertPanel } from "@/components/dashboard/AlertPanel";
 import { DeviceStatusPanel } from "@/components/dashboard/DeviceStatusPanel";
 import { SystemInfoPanel } from "@/components/dashboard/SystemInfoPanel";
-import { useMotorData } from "@/hooks/useMotorData";
 import type { MotorReading, MotorStatus } from "@/services/thingspeak";
 
 export const Route = createFileRoute("/")({
@@ -24,7 +24,6 @@ export const Route = createFileRoute("/")({
   component: DashboardPage,
 });
 
-// Demo fallback so the UI matches the spec values when no live data has arrived yet.
 const FALLBACK: MotorReading = {
   timestamp: new Date().toISOString(),
   time: "—",
@@ -46,12 +45,6 @@ function vibrationTone(v: number): KpiTone {
   return "critical";
 }
 
-function noiseTone(n: number): KpiTone {
-  if (n < 60) return "healthy";
-  if (n < 75) return "warning";
-  return "critical";
-}
-
 function healthTone(h: number): KpiTone {
   if (h >= 70) return "healthy";
   if (h >= 40) return "warning";
@@ -59,9 +52,45 @@ function healthTone(h: number): KpiTone {
 }
 
 function DashboardPage() {
-  const { readings, latest, loading, error, lastUpdatedAt } = useMotorData(20_000);
-  const data = readings.length > 0 ? readings : [];
-  const current = latest ?? FALLBACK;
+  const [readings, setReadings] = useState<MotorReading[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(
+          `https://api.allorigins.win/get?url=${encodeURIComponent(
+            "https://api.thingspeak.com/channels/3399470/feeds.json?api_key=VQL5EX22KNVGXLA4&results=20"
+          )}`
+        );
+        const raw = await res.json();
+        const json = JSON.parse(raw.contents);
+        const mapped: MotorReading[] = json.feeds.map((f: any) => ({
+          timestamp: f.created_at,
+          time: new Date(f.created_at).toLocaleTimeString(),
+          vibration: parseFloat(f.field1) || 0,
+          noise: parseFloat(f.field2) || 0,
+          healthIndex: parseFloat(f.field3) || 0,
+          status: (f.field4?.trim().toUpperCase() || "WARNING") as MotorStatus,
+        }));
+        setReadings(mapped);
+        setLastUpdatedAt(new Date());
+        setError(null);
+      } catch (e) {
+        setError("Failed to fetch");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+    const id = setInterval(load, 20000);
+    return () => clearInterval(id);
+  }, []);
+
+  const data = readings;
+  const current = readings.length > 0 ? readings[readings.length - 1] : FALLBACK;
   const online = !error;
 
   return (
@@ -209,9 +238,30 @@ function DashboardPage() {
         <SystemInfoPanel />
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Latest Readings
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Latest Readings
+              </CardTitle>
+              <button
+                onClick={() => {
+                  const headers = "Time,Vibration (g),Noise (dB),Health Index (%),Status";
+                  const rows = data.map((r) =>
+                    `${r.time},${r.vibration.toFixed(2)},${r.noise.toFixed(0)},${r.healthIndex.toFixed(0)},${r.status}`
+                  );
+                  const csv = [headers, ...rows].join("\n");
+                  const blob = new Blob([csv], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `motor-health-${new Date().toISOString().slice(0, 10)}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              >
+                Export CSV
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="max-h-64 overflow-auto">

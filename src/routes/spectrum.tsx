@@ -33,8 +33,8 @@ export const Route = createFileRoute("/spectrum")(({
   component: SpectrumPage,
 } as any));
 
-// ThingSpeak polls every 20 s → effective sample rate = 1/20 Hz
-const FS_HZ = 1 / 20;
+// ESP32 uploads every 15 s → effective sample rate = 1/15 Hz
+const FS_HZ = 1 / 15;
 
 type DataSource = "live" | "session";
 

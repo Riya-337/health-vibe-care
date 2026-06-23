@@ -11,6 +11,7 @@
  */
 
 import type { MotorReading } from "@/services/thingspeak";
+import { classifyFault, type FaultClassificationResult } from "@/services/referenceDataset";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ export interface PrognosticsResult {
   degradationScore: number;     // 0‒100  (0 = perfect, 100 = failed)
   maintenanceUrgency: "NONE" | "SCHEDULE" | "SOON" | "IMMEDIATE";
   recommendation: string;
+  faultClassification: FaultClassificationResult; // CWRU nearest-neighbor result
 }
 
 // ─── Math helpers ─────────────────────────────────────────────────────────────
@@ -176,7 +178,7 @@ export function detectAnomalies(readings: MotorReading[]): AnomalyPoint[] {
 // ─── RUL Estimation ──────────────────────────────────────────────────────────
 
 const FAILURE_THRESHOLD = 0;   // health index at "failure"
-const POLL_INTERVAL_SEC = 20;  // ThingSpeak poll rate
+const POLL_INTERVAL_SEC = 15;  // ESP32 upload interval (updated from 20s)
 
 export function estimateRUL(readings: MotorReading[]): RULResult | null {
   if (readings.length < 4) return null;
@@ -298,6 +300,7 @@ export function runPrognostics(readings: MotorReading[]): PrognosticsResult {
       degradationScore: 0,
       maintenanceUrgency: "NONE",
       recommendation: "No data available. Connect to ThingSpeak to begin analysis.",
+      faultClassification: classifyFault({ crestFactor: 0, stdDev: 0, mean: 0, peakToPeak: 0 }),
     };
   }
 
@@ -320,6 +323,13 @@ export function runPrognostics(readings: MotorReading[]): PrognosticsResult {
     rulResult?.rulHours ?? 9999,
   );
 
+  const faultClassification = classifyFault({
+    crestFactor: features.crestFactor,
+    stdDev: features.stdDev,
+    mean: features.mean,
+    peakToPeak: features.peakToPeak,
+  });
+
   return {
     features,
     anomalyPoints,
@@ -329,5 +339,6 @@ export function runPrognostics(readings: MotorReading[]): PrognosticsResult {
     degradationScore: score,
     maintenanceUrgency: urgency,
     recommendation,
+    faultClassification,
   };
 }

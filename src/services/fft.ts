@@ -106,8 +106,9 @@ export function findPeaks(bins: SpectrumBin[], topN = 3, thresholdPct = 20): Spe
  * Classify a dominant frequency peak as a known fault signature.
  * Reference: ISO 10816 / bearing characteristic frequency nomenclature.
  *
- * At the low sampling rates used here (0.05 Hz) the resolution is coarse,
- * so we use broad energy-band classification as a guide.
+ * At 1/15 Hz sampling, only variations slower than 7.5 s are resolvable.
+ * Labels describe energy-band trends in the reading sequence, NOT mechanical
+ * fault frequencies — those require on-device FFT at kHz sample rates.
  */
 export function classifySpectrum(
   bins: SpectrumBin[],
@@ -120,9 +121,9 @@ export function classifySpectrum(
   const nyquist = fs / 2;
   const relFreq = dominant.frequency / nyquist; // 0-1
 
-  if (dominant.magnitude < 30) return "Low energy — normal operation";
-  if (relFreq < 0.15) return "Low-frequency excitation — possible imbalance or misalignment";
-  if (relFreq < 0.45) return "Mid-frequency excitation — possible looseness or resonance";
-  if (relFreq < 0.75) return "High-frequency excitation — possible bearing wear";
-  return "Very high-frequency excitation — possible gear mesh or electrical noise";
+  if (dominant.magnitude < 30) return "Low spectral energy — readings are steady with no dominant trend";
+  if (relFreq < 0.15) return "Low-frequency variation — slow drift or gradual change in readings over time";
+  if (relFreq < 0.45) return "Mid-frequency variation — periodic pattern detected in the reading sequence";
+  if (relFreq < 0.75) return "High-frequency variation — rapid fluctuation between consecutive readings";
+  return "Very high-frequency variation — near Nyquist limit; likely measurement noise";
 }

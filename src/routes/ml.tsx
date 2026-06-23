@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { BrainCircuit, AlertTriangle, TrendingDown, Zap, Activity } from "lucide-react";
+import { BrainCircuit, AlertTriangle, TrendingDown, Zap, Activity, Database } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageShell } from "@/components/layout/PageShell";
 import { fetchMotorReadings } from "@/services/thingspeak";
@@ -218,6 +218,10 @@ function MLPrognosticsPage() {
                 </div>
               </div>
             )}
+            <p className="w-full text-xs text-muted-foreground leading-relaxed border border-border/50 rounded-lg px-3 py-2 bg-muted/20">
+              <span className="font-semibold text-foreground">Note: </span>
+              RUL is estimated from linear regression on the recent health-index trend. A temporary disturbance (e.g. fan test) causes a transient drop — RUL recovers automatically once readings stabilise. Slope and R² reflect the current window only.
+            </p>
           </CardContent>
         </Card>
 
@@ -263,7 +267,166 @@ function MLPrognosticsPage() {
         </Card>
       </section>
 
-      {/* ── Row 3: Anomaly Detection Chart ── */}
+      {/* ── Row 3: CWRU Bearing Fault Classification ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            CWRU Bearing Dataset Fault Classification
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Real-time classification against reference centroids from the Case Western Reserve University (CWRU) Bearing Data Center using a scale-invariant nearest-neighbor classifier.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            {/* Left Column: Classification Result */}
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              <div className="rounded-xl border border-border/80 bg-card p-5 relative overflow-hidden shadow-sm">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                      Matched Signature
+                    </span>
+                    <h3 className={`text-xl font-bold ${
+                      result.faultClassification.faultType === "NORMAL"
+                        ? "text-green-500"
+                        : result.faultClassification.faultType === "UNKNOWN"
+                        ? "text-muted-foreground"
+                        : "text-red-500"
+                    }`}>
+                      {result.faultClassification.displayName}
+                    </h3>
+                  </div>
+                  {result.faultClassification.faultType !== "UNKNOWN" && (
+                    <div className="text-right">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                        Confidence
+                      </span>
+                      <span className="text-lg font-bold text-foreground tabular-nums">
+                        {result.faultClassification.confidence.toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-sm leading-relaxed text-foreground mb-4">
+                  {result.faultClassification.description}
+                </p>
+
+                {/* Progress bar for confidence */}
+                {result.faultClassification.faultType !== "UNKNOWN" && (
+                  <div className="w-full bg-muted rounded-full h-2 mb-4 overflow-hidden">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        result.faultClassification.faultType === "NORMAL"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                      style={{ width: `${result.faultClassification.confidence}%` }}
+                    />
+                  </div>
+                )}
+
+                <div className="rounded-lg bg-muted/40 border border-border/50 px-3 py-2 text-xs leading-relaxed">
+                  <span className="font-semibold text-foreground">Physical Mechanism: </span>
+                  {result.faultClassification.mechanismNote}
+                </div>
+              </div>
+
+              {/* Live Features Comparison Card */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  {
+                    name: "Crest Factor",
+                    val: result.faultClassification.liveFeatures.crestFactor.toFixed(2),
+                    desc: "Peak / RMS (impulsivity)",
+                  },
+                  {
+                    name: "CV (Coeff Var)",
+                    val: result.faultClassification.liveFeatures.cv.toFixed(3),
+                    desc: "std-dev / |mean| (spread)",
+                  },
+                  {
+                    name: "Peak Ratio",
+                    val: result.faultClassification.liveFeatures.peakRatio.toFixed(2),
+                    desc: "peak-to-peak / |mean|",
+                  },
+                ].map((feat) => (
+                  <div key={feat.name} className="border border-border/60 rounded-lg p-2.5 bg-muted/10 text-center">
+                    <span className="text-[10px] text-muted-foreground block font-medium uppercase tracking-wider mb-1">
+                      {feat.name}
+                    </span>
+                    <span className="text-base font-bold text-foreground tabular-nums block">
+                      {feat.val}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground block mt-0.5 leading-tight">
+                      {feat.desc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Distance/Similarity Table */}
+            <div className="lg:col-span-5 flex flex-col justify-between gap-4">
+              <div className="border border-border/60 rounded-xl overflow-hidden shadow-sm bg-muted/5">
+                <div className="bg-muted/40 border-b border-border/60 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Reference Profile Match Matrix
+                </div>
+                <div className="p-3">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-muted-foreground border-b border-border/50">
+                        <th className="py-2 text-left font-semibold">Profile Name</th>
+                        <th className="py-2 text-right font-semibold">Match Similarity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.faultClassification.distances.map((d) => (
+                        <tr key={d.label} className="border-b border-border/30 last:border-b-0">
+                          <td className="py-2.5 font-medium text-foreground">
+                            {d.displayName}
+                          </td>
+                          <td className="py-2.5 text-right font-semibold tabular-nums">
+                            <div className="flex items-center justify-end gap-2">
+                              <span>{d.normalised.toFixed(0)}%</span>
+                              <div className="w-16 bg-muted rounded-full h-1.5 overflow-hidden hidden sm:block">
+                                <div
+                                  className={`h-1.5 rounded-full ${
+                                    d.label === "NORMAL"
+                                      ? "bg-green-500"
+                                      : "bg-red-500"
+                                  }`}
+                                  style={{ width: `${d.normalised}%` }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Citations & Limitations */}
+              <div className="text-[10px] text-muted-foreground leading-relaxed flex flex-col gap-2 bg-muted/20 border border-border/50 rounded-lg p-3">
+                <p>
+                  <span className="font-semibold text-foreground">Academic Citation: </span>
+                  {result.faultClassification.citation}
+                </p>
+                <p>
+                  <span className="font-semibold text-foreground">Methodology Note: </span>
+                  {result.faultClassification.limitationNote}
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Row 4: Anomaly Detection Chart ── */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">

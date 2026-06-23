@@ -12,7 +12,7 @@ interface RulGaugeProps {
 
 // Map hours → display label
 function formatRUL(hours: number): { value: string; unit: string } {
-  if (hours >= 9999) return { value: "∞", unit: "stable" };
+  if (hours >= 9999) return { value: "Stable", unit: "no degradation trend" };
   if (hours >= 48) return { value: (hours / 24).toFixed(1), unit: "days" };
   if (hours >= 1) return { value: hours.toFixed(1), unit: "hours" };
   const mins = hours * 60;

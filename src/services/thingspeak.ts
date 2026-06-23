@@ -29,7 +29,7 @@ export interface ThingSpeakResponse {
   feeds: ThingSpeakFeed[];
 }
 
-const DIRECT = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${READ_API_KEY}&results=20`;
+const DIRECT = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?api_key=${READ_API_KEY}&results=50`;
 
 const PROXIES = [
   // Direct (works in deployed/SSR context)

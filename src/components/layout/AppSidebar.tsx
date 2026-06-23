@@ -12,6 +12,9 @@ import {
   Menu,
   X,
   Cpu,
+  BrainCircuit,
+  Waves,
+  FileDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,9 @@ const NAV = [
   { to: "/charts", label: "Charts", icon: LineChart },
   { to: "/alerts", label: "Alerts", icon: BellRing },
   { to: "/reports", label: "Reports", icon: FileText },
+  { to: "/ml", label: "ML Prognostics", icon: BrainCircuit },
+  { to: "/spectrum", label: "Freq. Spectrum", icon: Waves },
+  { to: "/pdf-report", label: "PDF Report", icon: FileDown },
   { to: "/export", label: "Data Export", icon: Download },
   { to: "/settings", label: "Settings", icon: Settings },
   { to: "/about", label: "About", icon: Info },

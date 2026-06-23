@@ -1,4 +1,5 @@
 // ThingSpeak API integration for Motor Health Monitor
+import { logReadings } from "@/services/sessionLogger";
 
 export const CHANNEL_ID = "3399470";
 export const READ_API_KEY = "VQL5EX22KNVGXLA4";
@@ -98,7 +99,9 @@ export async function fetchMotorReadings(signal?: AbortSignal): Promise<MotorRea
       const raw = await res.json();
       const data = proxy.unwrap(raw) as ThingSpeakResponse;
       if (!data?.feeds || !Array.isArray(data.feeds) || data.feeds.length === 0) continue;
-      return mapFeeds(data.feeds);
+      const readings = mapFeeds(data.feeds);
+      logReadings(readings);
+      return readings;
     } catch {
       continue;
     }

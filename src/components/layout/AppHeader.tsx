@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import rvLogoAsset from "@/assets/rv-logo.png.asset.json";
-import motorImg from "@/assets/motor.png";
-const rvLogo = rvLogoAsset.url;
+const rvLogo = "/rv-logo-new.png";
 import { SidebarOpenButton } from "./AppSidebar";
 
 interface AppHeaderProps {
@@ -36,15 +34,8 @@ export function AppHeader({ online, onOpenSidebar }: AppHeaderProps) {
           <SidebarOpenButton onClick={onOpenSidebar} />
           <img
             src={rvLogo}
-            alt="RV College of Engineering logo"
+            alt="RV Institutions — Rashtreeya Sikshana Samithi Trust"
             className="h-12 w-12 shrink-0 rounded-full object-contain ring-1 ring-border"
-            width={48}
-            height={48}
-          />
-          <img
-            src={motorImg}
-            alt="Electric motor"
-            className="hidden h-12 w-12 shrink-0 object-contain sm:block"
             width={48}
             height={48}
           />

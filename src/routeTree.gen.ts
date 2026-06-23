@@ -9,8 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpectrumRouteImport } from './routes/spectrum'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as PdfReportRouteImport } from './routes/pdf-report'
+import { Route as MlRouteImport } from './routes/ml'
 import { Route as LiveDataRouteImport } from './routes/live-data'
 import { Route as ExportRouteImport } from './routes/export'
 import { Route as ChartsRouteImport } from './routes/charts'
@@ -18,6 +21,11 @@ import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SpectrumRoute = SpectrumRouteImport.update({
+  id: '/spectrum',
+  path: '/spectrum',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -26,6 +34,16 @@ const SettingsRoute = SettingsRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PdfReportRoute = PdfReportRouteImport.update({
+  id: '/pdf-report',
+  path: '/pdf-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MlRoute = MlRouteImport.update({
+  id: '/ml',
+  path: '/ml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LiveDataRoute = LiveDataRouteImport.update({
@@ -66,8 +84,11 @@ export interface FileRoutesByFullPath {
   '/charts': typeof ChartsRoute
   '/export': typeof ExportRoute
   '/live-data': typeof LiveDataRoute
+  '/ml': typeof MlRoute
+  '/pdf-report': typeof PdfReportRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/spectrum': typeof SpectrumRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,8 +97,11 @@ export interface FileRoutesByTo {
   '/charts': typeof ChartsRoute
   '/export': typeof ExportRoute
   '/live-data': typeof LiveDataRoute
+  '/ml': typeof MlRoute
+  '/pdf-report': typeof PdfReportRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/spectrum': typeof SpectrumRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,8 +111,11 @@ export interface FileRoutesById {
   '/charts': typeof ChartsRoute
   '/export': typeof ExportRoute
   '/live-data': typeof LiveDataRoute
+  '/ml': typeof MlRoute
+  '/pdf-report': typeof PdfReportRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/spectrum': typeof SpectrumRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,8 +126,11 @@ export interface FileRouteTypes {
     | '/charts'
     | '/export'
     | '/live-data'
+    | '/ml'
+    | '/pdf-report'
     | '/reports'
     | '/settings'
+    | '/spectrum'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -109,8 +139,11 @@ export interface FileRouteTypes {
     | '/charts'
     | '/export'
     | '/live-data'
+    | '/ml'
+    | '/pdf-report'
     | '/reports'
     | '/settings'
+    | '/spectrum'
   id:
     | '__root__'
     | '/'
@@ -119,8 +152,11 @@ export interface FileRouteTypes {
     | '/charts'
     | '/export'
     | '/live-data'
+    | '/ml'
+    | '/pdf-report'
     | '/reports'
     | '/settings'
+    | '/spectrum'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -130,12 +166,22 @@ export interface RootRouteChildren {
   ChartsRoute: typeof ChartsRoute
   ExportRoute: typeof ExportRoute
   LiveDataRoute: typeof LiveDataRoute
+  MlRoute: typeof MlRoute
+  PdfReportRoute: typeof PdfReportRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
+  SpectrumRoute: typeof SpectrumRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spectrum': {
+      id: '/spectrum'
+      path: '/spectrum'
+      fullPath: '/spectrum'
+      preLoaderRoute: typeof SpectrumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -148,6 +194,20 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pdf-report': {
+      id: '/pdf-report'
+      path: '/pdf-report'
+      fullPath: '/pdf-report'
+      preLoaderRoute: typeof PdfReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ml': {
+      id: '/ml'
+      path: '/ml'
+      fullPath: '/ml'
+      preLoaderRoute: typeof MlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live-data': {
@@ -202,8 +262,11 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsRoute: ChartsRoute,
   ExportRoute: ExportRoute,
   LiveDataRoute: LiveDataRoute,
+  MlRoute: MlRoute,
+  PdfReportRoute: PdfReportRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
+  SpectrumRoute: SpectrumRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

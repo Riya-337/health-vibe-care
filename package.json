@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && mkdir -p dist public .output/public && cp -R .output/public/* dist/ && cp -R .output/public/* public/",
+    "build": "vite build && mkdir -p dist/client public .output/public && cp -R .output/public/* dist/client/ && cp -R .output/public/* public/ && cp -R .output/public/* dist/",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -78,7 +78,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
-    "nitro": "3.0.260429-beta",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",

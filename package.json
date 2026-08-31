@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && mkdir -p dist/client public .output/public && cp -R .output/public/* dist/client/ && cp -R .output/public/* public/ && cp -R .output/public/* dist/",
+    "build": "vite build && node scripts/postbuild.js",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

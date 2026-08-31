@@ -15,26 +15,42 @@ function copyDir(src, dest) {
   }
 }
 
+let mainJs = '';
+let mainCss = '';
+
+const assetsDir = '.output/public/assets';
+if (fs.existsSync(assetsDir)) {
+  const files = fs.readdirSync(assetsDir);
+  for (const f of files) {
+    if (f.startsWith('index-') && f.endsWith('.js') && f.length > mainJs.length) {
+      mainJs = f;
+    }
+    if (f.endsWith('.css')) {
+      mainCss = f;
+    }
+  }
+}
+
+const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthVibe Care — Hospital EHR & Smart Motor Sentinel</title>
+    <link rel="icon" type="image/png" href="/rv-logo-new.png" />
+    ${mainCss ? `<link rel="stylesheet" href="/assets/${mainCss}" />` : ''}
+  </head>
+  <body class="bg-background text-foreground antialiased">
+    <div id="root"></div>
+    ${mainJs ? `<script type="module" src="/assets/${mainJs}"></script>` : ''}
+  </body>
+</html>`;
+
 const targets = ['dist', 'dist/client', 'public', '.output/public'];
 
 for (const dir of targets) {
   fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(path.join(dir, 'index.html'))) {
-    fs.writeFileSync(
-      path.join(dir, 'index.html'),
-      `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HealthVibe Care</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>`
-    );
-  }
+  fs.writeFileSync(path.join(dir, 'index.html'), htmlContent);
 }
 
 if (fs.existsSync('.output/public')) {

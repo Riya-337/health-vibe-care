@@ -9,61 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SpectrumRouteImport } from './routes/spectrum'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as PdfReportRouteImport } from './routes/pdf-report'
-import { Route as MlRouteImport } from './routes/ml'
-import { Route as LiveDataRouteImport } from './routes/live-data'
-import { Route as ExportRouteImport } from './routes/export'
-import { Route as ChartsRouteImport } from './routes/charts'
-import { Route as AlertsRouteImport } from './routes/alerts'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as ChartsRouteImport } from './routes/charts'
+import { Route as ExportRouteImport } from './routes/export'
+import { Route as LiveDataRouteImport } from './routes/live-data'
+import { Route as MlRouteImport } from './routes/ml'
+import { Route as PdfReportRouteImport } from './routes/pdf-report'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SpectrumRouteImport } from './routes/spectrum'
 
-const SpectrumRoute = SpectrumRouteImport.update({
-  id: '/spectrum',
-  path: '/spectrum',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PdfReportRoute = PdfReportRouteImport.update({
-  id: '/pdf-report',
-  path: '/pdf-report',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MlRoute = MlRouteImport.update({
-  id: '/ml',
-  path: '/ml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LiveDataRoute = LiveDataRouteImport.update({
-  id: '/live-data',
-  path: '/live-data',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExportRoute = ExportRouteImport.update({
-  id: '/export',
-  path: '/export',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChartsRoute = ChartsRouteImport.update({
-  id: '/charts',
-  path: '/charts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertsRoute = AlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -71,9 +31,49 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChartsRoute = ChartsRouteImport.update({
+  id: '/charts',
+  path: '/charts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExportRoute = ExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveDataRoute = LiveDataRouteImport.update({
+  id: '/live-data',
+  path: '/live-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MlRoute = MlRouteImport.update({
+  id: '/ml',
+  path: '/ml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PdfReportRoute = PdfReportRouteImport.update({
+  id: '/pdf-report',
+  path: '/pdf-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpectrumRoute = SpectrumRouteImport.update({
+  id: '/spectrum',
+  path: '/spectrum',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -175,67 +175,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/spectrum': {
-      id: '/spectrum'
-      path: '/spectrum'
-      fullPath: '/spectrum'
-      preLoaderRoute: typeof SpectrumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pdf-report': {
-      id: '/pdf-report'
-      path: '/pdf-report'
-      fullPath: '/pdf-report'
-      preLoaderRoute: typeof PdfReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ml': {
-      id: '/ml'
-      path: '/ml'
-      fullPath: '/ml'
-      preLoaderRoute: typeof MlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/live-data': {
-      id: '/live-data'
-      path: '/live-data'
-      fullPath: '/live-data'
-      preLoaderRoute: typeof LiveDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/export': {
-      id: '/export'
-      path: '/export'
-      fullPath: '/export'
-      preLoaderRoute: typeof ExportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/charts': {
-      id: '/charts'
-      path: '/charts'
-      fullPath: '/charts'
-      preLoaderRoute: typeof ChartsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alerts': {
-      id: '/alerts'
-      path: '/alerts'
-      fullPath: '/alerts'
-      preLoaderRoute: typeof AlertsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -245,11 +189,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charts': {
+      id: '/charts'
+      path: '/charts'
+      fullPath: '/charts'
+      preLoaderRoute: typeof ChartsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/export': {
+      id: '/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof ExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live-data': {
+      id: '/live-data'
+      path: '/live-data'
+      fullPath: '/live-data'
+      preLoaderRoute: typeof LiveDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ml': {
+      id: '/ml'
+      path: '/ml'
+      fullPath: '/ml'
+      preLoaderRoute: typeof MlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pdf-report': {
+      id: '/pdf-report'
+      path: '/pdf-report'
+      fullPath: '/pdf-report'
+      preLoaderRoute: typeof PdfReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spectrum': {
+      id: '/spectrum'
+      path: '/spectrum'
+      fullPath: '/spectrum'
+      preLoaderRoute: typeof SpectrumRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
